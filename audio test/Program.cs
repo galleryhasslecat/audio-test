@@ -31,7 +31,7 @@ namespace audio_test
             string pathtotxt = Console.ReadLine();
             string songname = "";
             string pathtosong = "";
-            StreamWriter writer = new StreamWriter(pathtotxt);
+            StreamWriter writer = new StreamWriter(pathtotxt, true);
             while (addsong == true)
             {               
                 Console.WriteLine("Name of song to be added");
@@ -52,8 +52,9 @@ namespace audio_test
                 
 
             }
-            writer.Close();
 
+            writer.Close();
+            mainmenu();
 
         }
         public static void playsongs()
@@ -106,6 +107,8 @@ namespace audio_test
                 if (command == "pause")
                 {
                     player.controls.pause();
+                    Console.ReadLine();
+                    player.controls.play();
                 }
                 else if (command == "stop")
                 {
