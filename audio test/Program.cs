@@ -211,47 +211,48 @@ namespace audio_test
             
             bool playing = true;
             
-            // Progress thread
+            // selection thread
             Thread progressThread = new Thread(() =>
             {
-                double remaining = 999;
                 while (playing)
                 {
-                    if (remaining <= 1)
+                    string command = Console.ReadLine();
+                    if (command == "pause")
                     {
-                        playing = false;
-                        return;
-                        
+                        player.controls.pause();
+                        Console.ReadLine();
+                        player.controls.play();
                     }
-                    double currentPos = player.controls.currentPosition;
-                    remaining = totalDuration - currentPos;
-                    
-                    int mins = (int)remaining / 60;
-                    int secs = (int)remaining % 60;
-                    
-                    Console.Write($"\rTime left: {mins:D2}:{secs:D2}  ");
-                    System.Threading.Thread.Sleep(1000);
+                    else if (command == "stop")
+                    {
+                        player.controls.stop();
+                        playing = false;
+                    }
                 }
+               
             });
             
             progressThread.IsBackground = true;  // thread dies with main program
             progressThread.Start();
-            
-            // Input on main thread
+
+            // progress on main thread
+            double remaining = 999;
             while (playing)
             {
-                string command = Console.ReadLine();
-                if (command == "pause")
+                if (remaining <= 1)
                 {
-                    player.controls.pause();
-                    Console.ReadLine();
-                    player.controls.play();
-                }
-                else if (command == "stop")
-                {
-                    player.controls.stop();
                     playing = false;
+                    return;
+
                 }
+                double currentPos = player.controls.currentPosition;
+                remaining = totalDuration - currentPos;
+
+                int mins = (int)remaining / 60;
+                int secs = (int)remaining % 60;
+
+                Console.Write($"\rTime left: {mins:D2}:{secs:D2}  ");
+                System.Threading.Thread.Sleep(1000);
             }
 
         }
