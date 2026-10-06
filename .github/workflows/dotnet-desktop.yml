@@ -1,0 +1,43 @@
+# This workflow builds the .NET Framework desktop app in this repository.
+# The project uses a legacy .NET Framework 4.7.2 configuration and does not include
+# a WAP packaging project or unit test project, so the generic template steps must
+# be replaced with the repository's actual solution file and build commands.
+
+name: .NET Desktop Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+
+    runs-on: windows-latest
+
+    env:
+      Solution_Name: "audio test.slnx"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore solution
+        run: msbuild "$env:Solution_Name" /t:Restore /p:Configuration=${{ matrix.configuration }}
+
+      - name: Build solution
+        run: msbuild "$env:Solution_Name" /p:Configuration=${{ matrix.configuration }} /m
