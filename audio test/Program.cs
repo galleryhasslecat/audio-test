@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace audio_test
 {
@@ -167,6 +169,7 @@ namespace audio_test
                     {
 
                         string location = search(2, path, hundredlist[intchoice], temppath); //search for path of selected song
+                        Console.WriteLine(hundredlist[intchoice]);
                         play(location, temppath); //play song
                         i = 0;
                         hundredlist.Clear();
@@ -198,14 +201,46 @@ namespace audio_test
         }
         public static void play(string path, string temppath)//Processing playback of songs
         {
-            bool playbool = true;
-            var player = new WMPLib.WindowsMediaPlayer(); //initialise player
+            var player = new WMPLib.WindowsMediaPlayer();
             player.URL = path;
-            Console.WriteLine("Player controls play, stop, pause");
             player.controls.play();
-            while (playbool == true) //allow user control of playback during playback 
+            
+            
+            System.Threading.Thread.Sleep(500);
+            double totalDuration = player.currentMedia.duration;
+            
+            bool playing = true;
+            
+            // Progress thread
+            Thread progressThread = new Thread(() =>
             {
-                string command = Console.ReadLine();//progress bar required
+                double remaining = 999;
+                while (playing)
+                {
+                    if (remaining <= 1)
+                    {
+                        playing = false;
+                        return;
+                        
+                    }
+                    double currentPos = player.controls.currentPosition;
+                    remaining = totalDuration - currentPos;
+                    
+                    int mins = (int)remaining / 60;
+                    int secs = (int)remaining % 60;
+                    
+                    Console.Write($"\rTime left: {mins:D2}:{secs:D2}  ");
+                    System.Threading.Thread.Sleep(1000);
+                }
+            });
+            
+            progressThread.IsBackground = true;  // thread dies with main program
+            progressThread.Start();
+            
+            // Input on main thread
+            while (playing)
+            {
+                string command = Console.ReadLine();
                 if (command == "pause")
                 {
                     player.controls.pause();
@@ -215,11 +250,7 @@ namespace audio_test
                 else if (command == "stop")
                 {
                     player.controls.stop();
-                    playbool = false;
-                }
-                else
-                {
-                    continue;
+                    playing = false;
                 }
             }
 
