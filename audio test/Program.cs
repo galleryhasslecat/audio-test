@@ -14,15 +14,39 @@ namespace audio_test
 {
     internal class Program
     {
-        
-        
-        
+
+
+        public static void foldersearch(string path, string temppath)
+        {
+            StreamWriter writer = new StreamWriter(path, true);
+            Console.WriteLine("Where is the folder to search");
+            string folderpath = Console.ReadLine();
+            string[] files = Directory.GetFiles(folderpath, "*.mp3");
+            foreach (var file in files)
+            {
+
+                string location = Path.GetDirectoryName(file);
+                string name = Path.GetFileName(file);
+                int namelenth = name.Length;
+                
+                location =   location + @"\" +  name;
+                name = name.Substring(0, namelenth-4);
+                Console.WriteLine(name);
+
+                writer.WriteLine(name);
+                
+                writer.WriteLine(location);
+            }
+            writer.Close();
+            mainmenu(path, temppath);
+        }
         public static void mainmenu(string path, string temppath)
         {
             Console.WriteLine("Add songs (1)");
             Console.WriteLine("Play library (2)");
             Console.WriteLine("Remove songs (3)");
-            Console.WriteLine("Exit (4)");
+            Console.WriteLine("Add folder (4)");
+            Console.WriteLine("Exit (5)");
             string strchoice = Console.ReadLine();
 
             if (int.TryParse(strchoice, out int choice))
@@ -35,13 +59,17 @@ namespace audio_test
                 {
                     playsongs(path, temppath);
                 }
-                else if (choice == 4)
+                else if (choice == 5)
                 {
                     Environment.Exit(0);
                 }
                 else if (choice == 3)
                 {
-                    remove(path,temppath);
+                    remove(path, temppath);
+                }
+                else if (choice == 4)
+                {
+                    foldersearch(path, temppath);
                 }
                 else
                 {
@@ -54,21 +82,21 @@ namespace audio_test
                 mainmenu(path, temppath);
             }
         }
-        public static void addsongs(string pathtotxt, string temppath)
+        public static void addsongs(string path, string temppath)
         {
             bool addsong = true;
-            
+
             string songname = "";
             string pathtosong = "";
-            StreamWriter writer = new StreamWriter(pathtotxt, true);
+            StreamWriter writer = new StreamWriter(path, true);
             while (addsong == true)
-            {               
+            {
                 Console.WriteLine("Name of song to be added");
                 songname = Console.ReadLine();
-                
+
                 Console.WriteLine("Path to song");
                 pathtosong = Console.ReadLine();
-                if((pathtosong.EndsWith(".mp3")) && (songname != ""))
+                if ((pathtosong.EndsWith(".mp3")) && (songname != ""))
                 {
 
                 }
@@ -80,7 +108,7 @@ namespace audio_test
                 }
                 writer.WriteLine(songname);
                 writer.WriteLine(pathtosong);
-                
+
                 Console.WriteLine("Add another song? (y/n)");
                 if (Console.ReadLine() == "y")
                 {
@@ -90,44 +118,44 @@ namespace audio_test
                 {
                     addsong = false;
                 }
-                
+
 
             }
 
             writer.Close();
-            mainmenu(pathtotxt,temppath);
+            mainmenu(path, temppath);
 
         }
-        public static void playsongs(string pathtotxt, string temppath)
+        public static void playsongs(string path, string temppath)
         {
             bool playsong = true;
-            
+
             string songname = "";
-            
-            
+
+
             while (playsong == true)
             {
-                search(1, pathtotxt,"",temppath);
+                search(1, path, "", temppath);
                 Console.WriteLine("What song would you like? (Say STOP to end music playback)");
                 songname = Console.ReadLine();
                 if (songname == "STOP")
                 {
-                    mainmenu(pathtotxt,temppath);
+                    mainmenu(path, temppath);
                 }
                 bool pathflag = false;
-                
+
                 string buffer = "junk";
                 bool played = false;
-                StreamReader reader2 = new StreamReader(pathtotxt);
+                StreamReader reader2 = new StreamReader(path);
                 while (buffer != null)
                 {
                     buffer = reader2.ReadLine();
                     if (pathflag == true)
                     {
-                        play(buffer,temppath);
+                        play(buffer, temppath);
                         played = true;
                         pathflag = false;
-                    } 
+                    }
                     if (buffer == songname)
                     {
                         pathflag = true;
@@ -135,14 +163,14 @@ namespace audio_test
                     }
                     else
                     {
-                        
+
                         if ((buffer == null) && (played == false))
                         {
                             Console.WriteLine("Not found :( ");
-                            
+
                         }
-                        
-                        
+
+
                     }
 
                 }
@@ -157,7 +185,7 @@ namespace audio_test
             player.URL = path;
             Console.WriteLine("Player controls play, stop, pause");
             player.controls.play();
-            while(playbool == true)
+            while (playbool == true)
             {
                 string command = Console.ReadLine();
                 if (command == "pause")
@@ -189,7 +217,7 @@ namespace audio_test
                     {
                         if (buffer.EndsWith(".mp3"))
                         {
-                            
+
                         }
                         else
                         {
@@ -214,8 +242,8 @@ namespace audio_test
                     }
                     reader2.Close();
                     break;
-                    
-                    
+
+
 
             }
             return "";
@@ -225,7 +253,7 @@ namespace audio_test
             StreamReader tempreader = new StreamReader(path);
             StreamWriter tempwriter = new StreamWriter(temppath);
             string tempbuffer = tempreader.ReadToEnd();
-            tempwriter.Write(tempbuffer); 
+            tempwriter.Write(tempbuffer);
             tempreader.Close();
             tempwriter.Close();
             string line = null;
@@ -244,7 +272,7 @@ namespace audio_test
                         {
                             continue;
                         }
-                            
+
 
                         writer.WriteLine(line);
                     }
@@ -254,12 +282,12 @@ namespace audio_test
         }
         static void Main(string[] args)
         {
-            
+
 
             string path = Directory.GetCurrentDirectory();
             string temppath = path + @"\tempfile.txt";
             path = path + @"\file.txt";
-            
+
             if (File.Exists(path))
             {
                 Console.WriteLine("File found!");
