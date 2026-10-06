@@ -1,15 +1,7 @@
-﻿using Microsoft.SqlServer.Server;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.IO;
-using System.Linq;
-using System.Runtime.Remoting.Contexts;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Permissions;
 using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace audio_test
 {
@@ -19,7 +11,7 @@ namespace audio_test
 
         public static void foldersearch(string path, string temppath)
         {
-            StreamWriter writer = new StreamWriter(path, true);
+            StreamWriter writer = new StreamWriter(path, true, Encoding.UTF8);
             Console.WriteLine("Where is the folder to search");
             string folderpath = Console.ReadLine();
             string[] files = Directory.GetFiles(folderpath, "*.mp3");
@@ -29,13 +21,13 @@ namespace audio_test
                 string location = Path.GetDirectoryName(file);
                 string name = Path.GetFileName(file);
                 int namelenth = name.Length;
-                
-                location =   location + @"\" +  name;
-                name = name.Substring(0, namelenth-4);
+
+                location = location + @"\" + name;
+                name = name.Substring(0, namelenth - 4);
                 Console.WriteLine(name);
 
                 writer.WriteLine(name);
-                
+
                 writer.WriteLine(location);
             }
             writer.Close();
@@ -89,7 +81,7 @@ namespace audio_test
 
             string songname = "";
             string pathtosong = "";
-            StreamWriter writer = new StreamWriter(path, true);
+            StreamWriter writer = new StreamWriter(path, true, Encoding.UTF8);
             while (addsong == true)
             {
                 Console.WriteLine("Name of song to be added");
@@ -131,70 +123,74 @@ namespace audio_test
         {
             bool playsong = true;
 
-            string songname = "";
+
 
 
             while (playsong == true)
             {
-                
-                Console.WriteLine("Type STOP to exit playback mode. Enter to continue.");
-                songname = Console.ReadLine();
-                if (songname == "STOP")
-                {
-                    mainmenu(path, temppath);
-                }
 
-                
+
+
+
+
 
                 string buffer = "junk";
                 bool hundredreached = false;
-                StreamReader reader2 = new StreamReader(path);
+
                 List<string> hundredlist = new List<string> { };
-                
-               
+                int i = 0;
+                StreamReader reader2 = new StreamReader(path, Encoding.UTF8);
                 while (hundredreached == false)
                 {
-                    int i = 0;
-                    hundredlist.Clear();
-                    while((( buffer = reader2.ReadLine()) != null) || (i == 100))
+
+
+                    while (((buffer = reader2.ReadLine()) != null))
                     {
-                        
+
                         if (!buffer.EndsWith(".mp3"))
                         {
-                            
+
                             hundredlist.Add(buffer);
                             Console.WriteLine($"({i}) {buffer}");
                             i++;
                         }
 
-                        
+
                     }
-                    Console.WriteLine($"Select a number 0 - {i} or next for next 100");
+                    Console.WriteLine($"Select a number 0 - {i - 1} or STOP to stop");
                     string choice = Console.ReadLine();
                     int intchoice = 0;
-                    if (choice == "next")
+
+                    if ((int.TryParse(choice, out intchoice)) && (intchoice >= 0) && (intchoice <= i))
                     {
-                        continue;
+
+                        string location = search(2, path, hundredlist[intchoice], temppath);
+                        play(location, temppath);
+                        i = 0;
+                        hundredlist.Clear();
+                        reader2.Close();
+                        playsongs(path, temppath);
                     }
+                    else if (choice == "STOP")
+                    {
+                        mainmenu(path, temppath);
+                    }
+
                     else
                     {
-                        if(int.TryParse(choice, out intchoice))
-                        {
-                            intchoice = intchoice;
-                            string location = search(2, path, hundredlist[intchoice], temppath);
-                            play(location, temppath);
-                            reader2.Close();
-                            playsongs(path, temppath);
-                        }
+
+                        Console.WriteLine("Invalid choice");
                     }
+
                 }
-                    
-
-
-                    
-
-                
                 reader2.Close();
+
+
+
+
+
+
+
             }
 
         }
@@ -248,7 +244,7 @@ namespace audio_test
                     reader.Close();
                     break;
                 case 2:
-                    StreamReader reader2 = new StreamReader(path);
+                    StreamReader reader2 = new StreamReader(path, Encoding.UTF8);
                     string buffer2 = reader2.ReadLine();
                     while (buffer2 != null)
                     {
@@ -270,8 +266,8 @@ namespace audio_test
         }
         public static void remove(string path, string temppath)
         {
-            StreamReader tempreader = new StreamReader(path);
-            StreamWriter tempwriter = new StreamWriter(temppath);
+            StreamReader tempreader = new StreamReader(path, Encoding.UTF8);
+            StreamWriter tempwriter = new StreamWriter(temppath, false, Encoding.UTF8);
             string tempbuffer = tempreader.ReadToEnd();
             tempwriter.Write(tempbuffer);
             tempreader.Close();
@@ -282,9 +278,9 @@ namespace audio_test
             string line_to_delete = Console.ReadLine();
             string line_to_delete2 = search(2, path, line_to_delete, temppath);
 
-            using (StreamReader reader = new StreamReader(temppath))
+            using (StreamReader reader = new StreamReader(temppath, Encoding.UTF8))
             {
-                using (StreamWriter writer = new StreamWriter(path))
+                using (StreamWriter writer = new StreamWriter(path, false, Encoding.UTF8))
                 {
                     while ((line = reader.ReadLine()) != null)
                     {
@@ -303,7 +299,7 @@ namespace audio_test
         static void Main(string[] args)
         {
 
-
+            Console.OutputEncoding = Encoding.UTF8;
             string path = Directory.GetCurrentDirectory();
             string temppath = path + @"\tempfile.txt";
             path = path + @"\file.txt";
