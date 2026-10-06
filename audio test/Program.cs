@@ -78,8 +78,9 @@ namespace audio_test
                     addsong = false;
                     continue;
                 }
-                writer.WriteLine(pathtosong);
                 writer.WriteLine(songname);
+                writer.WriteLine(pathtosong);
+                
                 Console.WriteLine("Add another song? (y/n)");
                 if (Console.ReadLine() == "y")
                 {
