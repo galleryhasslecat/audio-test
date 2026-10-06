@@ -8,22 +8,24 @@ namespace audio_test
     internal class Program
     {
 
-
-        public static void foldersearch(string path, string temppath)
+        //playlist function next major feature!
+        //Current Code needs improvement first though!!!!
+        //Clear Console more often
+        public static void foldersearch(string path, string temppath) //Searches for new songs from a folder
         {
             StreamWriter writer = new StreamWriter(path, true, Encoding.UTF8);
             Console.WriteLine("Where is the folder to search");
             string folderpath = Console.ReadLine();
-            string[] files = Directory.GetFiles(folderpath, "*.mp3");
-            foreach (var file in files)
+            string[] files = Directory.GetFiles(folderpath, "*.mp3"); //ensure files found end in .mp3
+            foreach (var file in files) //scan each file
             {
 
                 string location = Path.GetDirectoryName(file);
                 string name = Path.GetFileName(file);
                 int namelenth = name.Length;
 
-                location = location + @"\" + name;
-                name = name.Substring(0, namelenth - 4);
+                location = location + @"\" + name; //ensure formatting is correct for the location
+                name = name.Substring(0, namelenth - 4); //ensure formatting is correct for the name
                 Console.WriteLine(name);
 
                 writer.WriteLine(name);
@@ -33,7 +35,7 @@ namespace audio_test
             writer.Close();
             mainmenu(path, temppath);
         }
-        public static void mainmenu(string path, string temppath)
+        public static void mainmenu(string path, string temppath)//Main menu function
         {
             Console.WriteLine("Add songs (1)");
             Console.WriteLine("Play library (2)");
@@ -42,7 +44,7 @@ namespace audio_test
             Console.WriteLine("Exit (5)");
             string strchoice = Console.ReadLine();
 
-            if (int.TryParse(strchoice, out int choice))
+            if (int.TryParse(strchoice, out int choice)) //Main option selection
             {
                 if (choice == 1)
                 {
@@ -69,13 +71,13 @@ namespace audio_test
                     mainmenu(path, temppath);
                 }
             }
-            else
+            else //loop back if bad option
             {
                 Console.WriteLine("Invalid choice");
                 mainmenu(path, temppath);
             }
         }
-        public static void addsongs(string path, string temppath)
+        public static void addsongs(string path, string temppath)//Add new individual songs
         {
             bool addsong = true;
 
@@ -93,7 +95,7 @@ namespace audio_test
                 {
 
                 }
-                else
+                else //quit to main menu if insupported file or invalid location
                 {
                     Console.WriteLine("Invalid choices quitting to main menu!");
                     addsong = false;
@@ -119,14 +121,14 @@ namespace audio_test
             mainmenu(path, temppath);
 
         }
-        public static void playsongs(string path, string temppath)
+        public static void playsongs(string path, string temppath)//Song selection
         {
             bool playsong = true;
 
 
 
 
-            while (playsong == true)
+            while (playsong == true) //inialise infinite loop
             {
 
 
@@ -135,19 +137,19 @@ namespace audio_test
 
 
                 string buffer = "junk";
-                bool hundredreached = false;
+                bool hundredreached = false; //initialise variables
 
-                List<string> hundredlist = new List<string> { };
+                List<string> hundredlist = new List<string> { }; //create list to store song names
                 int i = 0;
                 StreamReader reader2 = new StreamReader(path, Encoding.UTF8);
-                while (hundredreached == false)
+                while (hundredreached == false) //not the best coding practice
                 {
 
 
-                    while (((buffer = reader2.ReadLine()) != null))
+                    while (((buffer = reader2.ReadLine()) != null)) //presence check
                     {
 
-                        if (!buffer.EndsWith(".mp3"))
+                        if (!buffer.EndsWith(".mp3")) //ensure correct item is being added
                         {
 
                             hundredlist.Add(buffer);
@@ -158,20 +160,20 @@ namespace audio_test
 
                     }
                     Console.WriteLine($"Select a number 0 - {i - 1} or STOP to stop");
-                    string choice = Console.ReadLine();
+                    string choice = Console.ReadLine(); //user selects song
                     int intchoice = 0;
 
-                    if ((int.TryParse(choice, out intchoice)) && (intchoice >= 0) && (intchoice <= i))
+                    if ((int.TryParse(choice, out intchoice)) && (intchoice >= 0) && (intchoice <= i)) //range check
                     {
 
-                        string location = search(2, path, hundredlist[intchoice], temppath);
-                        play(location, temppath);
+                        string location = search(2, path, hundredlist[intchoice], temppath); //search for path of selected song
+                        play(location, temppath); //play song
                         i = 0;
                         hundredlist.Clear();
                         reader2.Close();
-                        playsongs(path, temppath);
+                        playsongs(path, temppath);//loop back after playback is finished
                     }
-                    else if (choice == "STOP")
+                    else if (choice == "STOP") //user commands stop
                     {
                         mainmenu(path, temppath);
                     }
@@ -194,16 +196,16 @@ namespace audio_test
             }
 
         }
-        public static void play(string path, string temppath)
+        public static void play(string path, string temppath)//Processing playback of songs
         {
             bool playbool = true;
-            var player = new WMPLib.WindowsMediaPlayer();
+            var player = new WMPLib.WindowsMediaPlayer(); //initialise player
             player.URL = path;
             Console.WriteLine("Player controls play, stop, pause");
             player.controls.play();
-            while (playbool == true)
+            while (playbool == true) //allow user control of playback during playback 
             {
-                string command = Console.ReadLine();
+                string command = Console.ReadLine();//progress bar required
                 if (command == "pause")
                 {
                     player.controls.pause();
@@ -222,12 +224,12 @@ namespace audio_test
             }
 
         }
-        public static string search(int mode, string path, string target, string temppath)
+        public static string search(int mode, string path, string target, string temppath)//Search function with 2 specific modes
         {
             switch (mode)
             {
-                case 1:
-                    StreamReader reader = new StreamReader(path);
+                case 1: //Display all song names 
+                    StreamReader reader = new StreamReader(path, Encoding.UTF8);
                     string buffer = reader.ReadLine();
                     while (buffer != null)
                     {
@@ -243,14 +245,14 @@ namespace audio_test
                     }
                     reader.Close();
                     break;
-                case 2:
+                case 2: //Find Location of a song based on title
                     StreamReader reader2 = new StreamReader(path, Encoding.UTF8);
                     string buffer2 = reader2.ReadLine();
                     while (buffer2 != null)
                     {
                         if (buffer2 == target)
                         {
-                            string memorysaver = reader2.ReadLine();
+                            string memorysaver = reader2.ReadLine(); //alows us to close reader2
                             reader2.Close();
                             return memorysaver;
                         }
@@ -264,7 +266,7 @@ namespace audio_test
             }
             return "";
         }
-        public static void remove(string path, string temppath)
+        public static void remove(string path, string temppath)//Remove songs needs improvement
         {
             StreamReader tempreader = new StreamReader(path, Encoding.UTF8);
             StreamWriter tempwriter = new StreamWriter(temppath, false, Encoding.UTF8);
@@ -296,7 +298,7 @@ namespace audio_test
             }
             mainmenu(path, temppath);
         }
-        static void Main(string[] args)
+        static void Main(string[] args)//initialisation
         {
 
             Console.OutputEncoding = Encoding.UTF8;
@@ -304,7 +306,7 @@ namespace audio_test
             string temppath = path + @"\tempfile.txt";
             path = path + @"\file.txt";
 
-            if (File.Exists(path))
+            if (File.Exists(path)) //check for song index
             {
                 Console.WriteLine("File found!");
             }
@@ -313,7 +315,7 @@ namespace audio_test
                 Console.WriteLine("File not found creating file");
                 File.WriteAllText(path, "");
             }
-            if (File.Exists(temppath))
+            if (File.Exists(temppath)) //check for temporary song index used for deletion
             {
                 Console.WriteLine("File found!");
             }
