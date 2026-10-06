@@ -1,6 +1,7 @@
 ﻿using Microsoft.SqlServer.Server;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Contexts;
@@ -135,45 +136,64 @@ namespace audio_test
 
             while (playsong == true)
             {
-                search(1, path, "", temppath);
-                Console.WriteLine("What song would you like? (Say STOP to end music playback)");
+                
+                Console.WriteLine("Type STOP to exit playback mode. Enter to continue.");
                 songname = Console.ReadLine();
                 if (songname == "STOP")
                 {
                     mainmenu(path, temppath);
                 }
-                bool pathflag = false;
+
+                
 
                 string buffer = "junk";
-                bool played = false;
+                bool hundredreached = false;
                 StreamReader reader2 = new StreamReader(path);
-                while (buffer != null)
+                List<string> hundredlist = new List<string> { };
+                
+               
+                while (hundredreached == false)
                 {
-                    buffer = reader2.ReadLine();
-                    if (pathflag == true)
+                    int i = 0;
+                    hundredlist.Clear();
+                    while((( buffer = reader2.ReadLine()) != null) || (i == 100))
                     {
-                        play(buffer, temppath);
-                        played = true;
-                        pathflag = false;
+                        
+                        if (!buffer.EndsWith(".mp3"))
+                        {
+                            
+                            hundredlist.Add(buffer);
+                            Console.WriteLine($"({i}) {buffer}");
+                            i++;
+                        }
+
+                        
                     }
-                    if (buffer == songname)
+                    Console.WriteLine($"Select a number 0 - {i} or next for next 100");
+                    string choice = Console.ReadLine();
+                    int intchoice = 0;
+                    if (choice == "next")
                     {
-                        pathflag = true;
-                        Console.WriteLine("Found!");
+                        continue;
                     }
                     else
                     {
-
-                        if ((buffer == null) && (played == false))
+                        if(int.TryParse(choice, out intchoice))
                         {
-                            Console.WriteLine("Not found :( ");
-
+                            intchoice = intchoice;
+                            string location = search(2, path, hundredlist[intchoice], temppath);
+                            play(location, temppath);
+                            reader2.Close();
+                            playsongs(path, temppath);
                         }
-
-
                     }
-
                 }
+                    
+
+
+                    
+
+                
                 reader2.Close();
             }
 
