@@ -214,6 +214,7 @@ namespace audio_test
             // selection thread
             Thread progressThread = new Thread(() =>
             {
+                Console.WriteLine("Player controls: pause, play, stop");
                 while (playing)
                 {
                     string command = Console.ReadLine();
@@ -252,7 +253,7 @@ namespace audio_test
                 int secs = (int)remaining % 60;
 
                 Console.Write($"\rTime left: {mins:D2}:{secs:D2}  ");
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(200);
             }
 
         }
