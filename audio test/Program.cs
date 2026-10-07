@@ -13,8 +13,10 @@ namespace audio_test
         //playlist function next major feature!
         //Current Code needs improvement first though!!!!
         //Clear Console more often
+        
         public static void foldersearch(string path, string temppath) //Searches for new songs from a folder
         {
+            Console.Clear();
             StreamWriter writer = new StreamWriter(path, true, Encoding.UTF8);
             Console.WriteLine("Where is the folder to search");
             string folderpath = Console.ReadLine();
@@ -35,10 +37,12 @@ namespace audio_test
                 writer.WriteLine(location);
             }
             writer.Close();
+            Thread.Sleep(1000);
             mainmenu(path, temppath);
         }
         public static void mainmenu(string path, string temppath)//Main menu function
         {
+            Console.Clear();
             Console.WriteLine("Add songs (1)");
             Console.WriteLine("Play library (2)");
             Console.WriteLine("Remove songs (3)");
@@ -81,6 +85,7 @@ namespace audio_test
         }
         public static void addsongs(string path, string temppath)//Add new individual songs
         {
+            Console.Clear();
             bool addsong = true;
 
             string songname = "";
@@ -109,6 +114,7 @@ namespace audio_test
                 Console.WriteLine("Add another song? (y/n)");
                 if (Console.ReadLine() == "y")
                 {
+                    Console.Clear();
                     continue;
                 }
                 else
@@ -132,7 +138,7 @@ namespace audio_test
 
             while (playsong == true) //inialise infinite loop
             {
-
+                Console.Clear();
 
 
 
@@ -169,8 +175,8 @@ namespace audio_test
                     {
 
                         string location = search(2, path, hundredlist[intchoice], temppath); //search for path of selected song
-                        Console.WriteLine(hundredlist[intchoice]);
-                        play(location, temppath); //play song
+                        
+                        play(location, temppath, hundredlist[intchoice]); //play song
                         i = 0;
                         hundredlist.Clear();
                         reader2.Close();
@@ -178,6 +184,9 @@ namespace audio_test
                     }
                     else if (choice == "STOP") //user commands stop
                     {
+                        i = 0;
+                        hundredlist.Clear();
+                        reader2.Close();
                         mainmenu(path, temppath);
                     }
 
@@ -199,13 +208,13 @@ namespace audio_test
             }
 
         }
-        public static void play(string path, string temppath)//Processing playback of songs
+        public static void play(string path, string temppath,string name)//Processing playback of songs
         {
             var player = new WMPLib.WindowsMediaPlayer();
             player.URL = path;
             player.controls.play();
-            
-            
+
+            Console.Clear();
             System.Threading.Thread.Sleep(500);
             double totalDuration = player.currentMedia.duration;
             
@@ -214,18 +223,22 @@ namespace audio_test
             // selection thread
             Thread progressThread = new Thread(() =>
             {
-                Console.WriteLine("Player controls: pause, play, stop");
+                
                 while (playing)
                 {
+                    Console.WriteLine($"{name}");
+                    Console.WriteLine("Player controls: pause, play, stop");
                     string command = Console.ReadLine();
                     if (command == "pause")
                     {
                         player.controls.pause();
                         Console.ReadLine();
                         player.controls.play();
+                        Console.Clear();
                     }
                     else if (command == "stop")
                     {
+                        Console.Clear();
                         player.controls.stop();
                         playing = false;
                     }
@@ -301,6 +314,7 @@ namespace audio_test
         }
         public static void remove(string path, string temppath)//Remove songs needs improvement
         {
+            Console.Clear();
             StreamReader tempreader = new StreamReader(path, Encoding.UTF8);
             StreamWriter tempwriter = new StreamWriter(temppath, false, Encoding.UTF8);
             string tempbuffer = tempreader.ReadToEnd();
@@ -357,7 +371,9 @@ namespace audio_test
                 Console.WriteLine("File not found creating file");
                 File.WriteAllText(temppath, "");
             }
+            
             mainmenu(path, temppath);
         }
     }
 }
+//364 lines of bullshit!!!!
