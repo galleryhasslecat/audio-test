@@ -7,13 +7,24 @@ using System.Threading;
 
 namespace audio_test
 {
+
     internal class Program
     {
+        public static string playlistpath = $@"{Directory.GetCurrentDirectory()}\playlist.txt";
 
         //playlist function next major feature!
         //Current Code needs improvement first though!!!!
         //Clear Console more often
-        
+        public static void playlist(string path, string temppath,int mode)
+        {
+            if (mode == 1)
+            {
+                Console.WriteLine("What is your playlist name?");
+                string playname = Console.ReadLine();
+                string indivplaypath = $@"{Directory.GetCurrentDirectory()}\{playname}.txt";
+                StreamWriter writer = new StreamWriter(playlistpath, true);
+            }
+        }
         public static void foldersearch(string path, string temppath) //Searches for new songs from a folder
         {
             Console.Clear();
@@ -361,6 +372,15 @@ namespace audio_test
             {
                 Console.WriteLine("File not found creating file");
                 File.WriteAllText(path, "");
+            }
+            if (File.Exists(playlistpath)) //check for song index
+            {
+                Console.WriteLine("File found!");
+            }
+            else
+            {
+                Console.WriteLine("File not found creating file");
+                File.WriteAllText(playlistpath, "");
             }
             if (File.Exists(temppath)) //check for temporary song index used for deletion
             {
