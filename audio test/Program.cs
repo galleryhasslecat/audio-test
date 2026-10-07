@@ -24,20 +24,21 @@ namespace audio_test
                 Console.WriteLine($"({i}) {list[i]}");
                 i++;
             }
-            return i;
+            return i-1;
         }
-        public static List<string> listgen(string path, string temppath)
+        public static List<string> listgen(string path, string temppath,string remove)
         {
             StreamReader reader = new StreamReader(path);
             List<string> list = new List<string>();
             string buffer = "";
             while((buffer = reader.ReadLine()) != null)
             {
-                if (!buffer.EndsWith(".mp3"))
+                if (!buffer.EndsWith(remove))
                 {
                     list.Add(buffer);
                 }
             }
+            reader.Close();
             return list;
         }
         public static void playlist(string path, string temppath, int mode) //mode 2 ammend //mode 3 mass add //mode 4 play 
@@ -110,7 +111,7 @@ namespace audio_test
                 bool loop = true;
                 while (((buffer = playnameread.ReadLine()) != null))
                 {
-                    if (!buffer.EndsWith(".mp3"))
+                    if ((!buffer.EndsWith(".txt")))
                     {
                         playnamelist.Add(buffer);
 
@@ -134,7 +135,7 @@ namespace audio_test
                     choice = Console.ReadLine();
                     if ((int.TryParse(choice, out int intchoice) && (intchoice >= 0) && (intchoice <= i - 1)))
                     {
-                        pathtoplaylist = search(2, path, playnamelist[intchoice], temppath);
+                        pathtoplaylist = search(2, playlistpath, playnamelist[intchoice], temppath);
                         loop = false;
                         continue;
                     }
@@ -142,7 +143,100 @@ namespace audio_test
                     {
                         continue;
                     }
+
                 }
+                loop = true;
+                List<string> playlistsonglist = listgen(pathtoplaylist, temppath,".mp3");
+                Console.WriteLine("Would you like to remove (1) or add songs (2) to this playlist?");
+                int choice2 = int.Parse(Console.ReadLine());
+                if( choice2 == 2)
+                {
+                    
+                    Console.Clear();
+                    List<string> mainlist = listgen(path, temppath, ".mp3");
+                    for(i = listoutput(playlistsonglist); i > 0; i--)
+                    {
+                        int j = 0;
+                        while(j < mainlist.Count)
+                        {
+                            Console.Clear();
+                            if (mainlist[j] == playlistsonglist[i])
+                            {
+                                mainlist.RemoveAt(j);
+                                
+                                Console.WriteLine("dsdwfsa");
+                            }
+                            j++;
+
+                        }
+                    }
+                    bool addsong = true;
+                    while (addsong)
+                    {
+                        i = listoutput(mainlist);
+                        string choice = "";
+                        Console.WriteLine($"Please choose a song to add 0 - {i} or stop to stop");
+                        choice = Console.ReadLine();
+
+                        
+                        if ((int.TryParse(choice, out int intchoice) && (intchoice >= 0) && (intchoice <= i)))
+                        {
+                            playlistsonglist.Add(mainlist[intchoice]);
+                            mainlist.RemoveAt(intchoice);
+
+                        }
+                        else if (choice == "stop")
+                        {
+                            addsong = false;
+                            continue;
+                        }
+
+                    }
+                    
+                } 
+                if (choice2 == 1)
+                {
+                    while (loop)
+                    {
+                        i = listoutput(playlistsonglist);
+                        string choice = "";
+                        Console.WriteLine($"Please select a song to remove 0 - {i} or choose STOP to stop");
+                        choice = Console.ReadLine();
+
+                        if ((int.TryParse(choice, out int intchoice)) && (intchoice <= i) && (intchoice >= 0))
+                        {
+
+                            playlistsonglist.Remove(playlistsonglist[intchoice]);
+                            playlistsonglist.Remove(search(2, path, playlistsonglist[intchoice], temppath));
+
+                        }
+                        else if(choice == "STOP")
+                        {
+                            loop = false;
+                            continue;
+                        }
+                        else
+                        {
+                            Console.Clear();
+                            Console.WriteLine("Invalid choice");
+                            continue;
+                        }
+
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Bad option");
+                }
+                
+                StreamWriter finalwrite = new StreamWriter(pathtoplaylist, false);
+                for(i = playlistsonglist.Count; i > 0; i--)
+                {
+                    finalwrite.WriteLine(playlistsonglist[i-1]);
+                    finalwrite.WriteLine(search(2, path, playlistsonglist[i-1], temppath));
+                }
+                finalwrite.Close();
+                mainmenu(path, temppath);
                 
                 
             }
@@ -454,7 +548,7 @@ namespace audio_test
                     reader2.Close();
                     break;
                 case 3://check if something already exists in a given context
-                    StreamReader reader3 = new StreamReader(path);
+                    StreamReader reader3 = new StreamReader(path); //path is context target is item to check
                     string buffer3 = "";
                     while ((buffer3 = reader3.ReadLine()) != null)
                     {
