@@ -41,7 +41,7 @@ namespace audio_test
             reader.Close();
             return list;
         }
-        public static void playlist(string path, string temppath, int mode) //mode 2 ammend //mode 3 mass add //mode 4 play 
+        public static void playlist(string path, string temppath, int mode) //mode 2 ammend //mode 3 mass add //mode 4 play //mode 5 remove song from all playlists 
         {
             if (mode == 1) //playlist creation
             {
@@ -154,22 +154,25 @@ namespace audio_test
                     
                     Console.Clear();
                     List<string> mainlist = listgen(path, temppath, ".mp3");
-                    for(i = listoutput(playlistsonglist); i > 0; i--)
+                    Console.Clear();
+                    Console.WriteLine("Loading may take time.");
+                    for (i = listoutput(playlistsonglist); i > 0; i--)
                     {
                         int j = 0;
                         while(j < mainlist.Count)
                         {
-                            Console.Clear();
+                            
                             if (mainlist[j] == playlistsonglist[i])
                             {
                                 mainlist.RemoveAt(j);
                                 
-                                Console.WriteLine("dsdwfsa");
+                                
                             }
                             j++;
 
                         }
                     }
+                    Console.Clear();
                     bool addsong = true;
                     while (addsong)
                     {
@@ -496,6 +499,7 @@ namespace audio_test
             double remaining = 999;
             while (playing)
             {
+                Thread.Sleep(50);
                 if (remaining <= 1)
                 {
                     playing = false;
