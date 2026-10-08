@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.SqlServer.Server;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -707,7 +708,42 @@ namespace audio_test
         }
         public static void remove(string path, string temppath)//Remove songs needs improvement
         {
-            
+            List<string> list = listgen(path, temppath, ".mp3");
+            bool loop = true;
+            while (loop)
+            {
+                Console.Clear();
+                int i = listoutput(list);
+                string choice = "";
+                Console.WriteLine($"Select a song to remove 0 - {i} or STOP to stop");
+                choice = Console.ReadLine();
+                if ((int.TryParse(choice, out int intchoice)) && (intchoice >= 0) && (intchoice <= i))
+                {
+                    playlist(path, temppath, 5, new List<string>(), list[intchoice]);
+                    list.Remove(list[intchoice]);
+                    
+                }
+                else if(choice == "STOP")
+                {
+                    loop = false;
+                    continue;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            StreamWriter writer = new StreamWriter(path,false);
+            int n = 0;
+            while(n < list.Count)
+            {
+                writer.WriteLine(list[n]);
+                n++;
+               
+            }
+            writer.Close();
+            mainmenu(path, temppath);
+
         }
         static void Main(string[] args)//initialisation
         {
