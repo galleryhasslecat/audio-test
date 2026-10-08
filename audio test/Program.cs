@@ -236,7 +236,7 @@ namespace audio_test
                 for (i = 0; i < playlistsonglist.Count; i++)
                 {
                     finalwrite.WriteLine(playlistsonglist[i]);
-                    finalwrite.WriteLine(search(2, path, playlistsonglist[i], temppath));
+                    
                 }
                 finalwrite.Close();
                 mainmenu(path, temppath);
@@ -262,6 +262,69 @@ namespace audio_test
                     i++;
                 }
                 writer.Close();
+            }
+            else if (mode == 4)
+            {
+                Console.Clear();
+                string chosenplaylistpath = "";
+                List<string> playlistlist = listgen(playlistpath, temppath, ".txt");
+                bool loop = true;
+                while (loop)
+                {
+                    int i = listoutput(playlistlist);
+                    string choice = "";
+                    Console.WriteLine($"Which playlist would you like 0 - {i} or STOP to stop");
+                    choice = Console.ReadLine();
+                    if ((int.TryParse(choice, out int intchoice) ) && (intchoice >= 0) && (intchoice <= i))
+                    {
+                        
+                        chosenplaylistpath = search(2,playlistpath,playlistlist[intchoice],temppath);
+                        loop = false;
+                        continue;
+                    }
+                    else if(choice == "STOP")
+                    {
+                        loop = false;
+                        mainmenu(path, temppath);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                int p = 0;
+                List<string> playinglist = listgen(chosenplaylistpath, temppath, ".mp3");
+                while ((p < playinglist.Count) && (p != -6451))
+                {
+                    int checkstop = play(search(2, path, playinglist[p], temppath), temppath, playinglist[p]);
+                    if (checkstop != 0)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Stopped would you like to skip the song or stop the playlist\n(s) for skip\nanything else for stop" +
+                            "\nmay need to press enter multiple times");
+                        if (Console.ReadLine() == "s")
+                        {
+                            p++;
+                            continue;
+                        }
+                        else
+                        {
+
+                            p = -6451;
+                            continue;
+                        }
+                        
+                    }
+                    else
+                    {
+                        p++;
+                    }
+                    
+                }
+                mainmenu(path, temppath);
+                
+                
+                
             }
         }
         public static void foldersearch(string path, string temppath) //Searches for new songs from a folder
@@ -332,7 +395,7 @@ namespace audio_test
                 }
                 else if (choice == 5)
                 {
-                    Console.WriteLine("\n(1) Create playlist\n(2) Ammend current playlist");
+                    Console.WriteLine("\n(1) Create playlist\n(2) Ammend current playlist\n(3) Play playlist");
                     int modechoice = int.Parse(Console.ReadLine());
                     if (modechoice == 1)
                     {
@@ -341,6 +404,10 @@ namespace audio_test
                     else if (modechoice == 2)
                     {
                         playlist(path, temppath, 2,new List<string>());
+                    }
+                    else if (modechoice == 3)
+                    {
+                        playlist(path,temppath,4,new List<string>());
                     }
                 }
 
@@ -480,7 +547,7 @@ namespace audio_test
             }
 
         }
-        public static void play(string path, string temppath, string name)//Processing playback of songs
+        public static int play(string path, string temppath, string name)//Processing playback of songs
         {
             var player = new WMPLib.WindowsMediaPlayer();
             player.URL = path;
@@ -513,6 +580,7 @@ namespace audio_test
                         Console.Clear();
                         player.controls.stop();
                         playing = false;
+                        return;
                     }
                 }
 
@@ -529,7 +597,7 @@ namespace audio_test
                 if (remaining <= 1)
                 {
                     playing = false;
-                    return;
+                    return 0;
 
                 }
                 double currentPos = player.controls.currentPosition;
@@ -541,6 +609,7 @@ namespace audio_test
                 Console.Write($"\rTime left: {mins:D2}:{secs:D2}  ");
                 System.Threading.Thread.Sleep(200);
             }
+            return 5;
 
         }
         public static string search(int mode, string path, string target, string temppath)//Search function with 2 specific modes
