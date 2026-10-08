@@ -16,7 +16,7 @@ namespace audio_test
         //Current Code needs improvement first though!!!!
         //Clear Console more often
         //search to check if something exists when adding new songs
-        public static int listoutput(List<string> list)
+        public static int listoutput(List<string> list)//outputs a list with a numbered format returning the number of items in a list
         {
             int i = 0;
             while (i < list.Count)
@@ -26,7 +26,7 @@ namespace audio_test
             }
             return i-1;
         }
-        public static List<string> listgen(string path, string temppath,string remove)
+        public static List<string> listgen(string path, string temppath,string remove)//generates a list from a file
         {
             StreamReader reader = new StreamReader(path);
             List<string> list = new List<string>();
