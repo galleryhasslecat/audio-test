@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.SqlServer.Server;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -707,38 +708,42 @@ namespace audio_test
         }
         public static void remove(string path, string temppath)//Remove songs needs improvement
         {
-            Console.Clear();
-            StreamReader tempreader = new StreamReader(path, Encoding.UTF8);
-            StreamWriter tempwriter = new StreamWriter(temppath, false, Encoding.UTF8);
-            string tempbuffer = tempreader.ReadToEnd();
-            tempwriter.Write(tempbuffer);
-            tempreader.Close();
-            tempwriter.Close();
-            string line = null;
-            search(1, path, "", temppath);
-            Console.WriteLine("Which to remove");
-            string line_to_delete = Console.ReadLine();
-            string line_to_delete2 = search(2, path, line_to_delete, temppath);
-
-            using (StreamReader reader = new StreamReader(temppath, Encoding.UTF8))
+            List<string> list = listgen(path, temppath, ".mp3");
+            bool loop = true;
+            while (loop)
             {
-                using (StreamWriter writer = new StreamWriter(path, false, Encoding.UTF8))
+                Console.Clear();
+                int i = listoutput(list);
+                string choice = "";
+                Console.WriteLine($"Select a song to remove 0 - {i} or STOP to stop");
+                choice = Console.ReadLine();
+                if ((int.TryParse(choice, out int intchoice)) && (intchoice >= 0) && (intchoice <= i))
                 {
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        if ((String.Compare(line, line_to_delete) == 0) || (String.Compare(line, line_to_delete2) == 0))
-                        {
-                            playlist(path, temppath, 5, new List<string>(), line);
-                            continue;
-                        }
-
-
-                        writer.WriteLine(line);
-                        
-                    }
+                    playlist(path, temppath, 5, new List<string>(), list[intchoice]);
+                    list.Remove(list[intchoice]);
+                    
+                }
+                else if(choice == "STOP")
+                {
+                    loop = false;
+                    continue;
+                }
+                else
+                {
+                    continue;
                 }
             }
+            StreamWriter writer = new StreamWriter(path,false);
+            int n = 0;
+            while(n < list.Count)
+            {
+                writer.WriteLine(list[n]);
+                n++;
+               
+            }
+            writer.Close();
             mainmenu(path, temppath);
+
         }
         static void Main(string[] args)//initialisation
         {
