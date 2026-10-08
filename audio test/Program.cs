@@ -207,12 +207,13 @@ namespace audio_test
                         {
 
                             playlistsonglist.Remove(playlistsonglist[intchoice]);
-                            playlistsonglist.Remove(search(2, path, playlistsonglist[intchoice], temppath));
+                            Console.Clear();
 
                         }
                         else if(choice == "STOP")
                         {
                             loop = false;
+                            Console.Clear();
                             continue;
                         }
                         else
@@ -230,10 +231,10 @@ namespace audio_test
                 }
                 
                 StreamWriter finalwrite = new StreamWriter(pathtoplaylist, false);
-                for(i = playlistsonglist.Count; i > 0; i--)
+                for(i = 0; i < playlistsonglist.Count ; i++)
                 {
-                    finalwrite.WriteLine(playlistsonglist[i-1]);
-                    finalwrite.WriteLine(search(2, path, playlistsonglist[i-1], temppath));
+                    finalwrite.WriteLine(playlistsonglist[i]);
+                    finalwrite.WriteLine(search(2, path, playlistsonglist[i], temppath));
                 }
                 finalwrite.Close();
                 mainmenu(path, temppath);
@@ -302,6 +303,7 @@ namespace audio_test
                 }
                 else if (choice == 5)
                 {
+                    Console.WriteLine("\n(1) Create playlist\n(2) Ammend current playlist");
                     int modechoice = int.Parse(Console.ReadLine());
                     if (modechoice == 1)
                     {
