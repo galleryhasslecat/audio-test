@@ -40,7 +40,7 @@ namespace audio_test
             reader.Close();
             return list;
         }
-        public static void playlist(string path, string temppath, int mode,List<string> createlist) //mode 2 ammend //mode 3 mass add //mode 4 play //mode 5 remove song from all playlists 
+        public static void playlist(string path, string temppath, int mode,List<string> createlist,string target) //mode 2 ammend //mode 3 mass add //mode 4 play //mode 5 remove song from all playlists 
         {
             if (mode == 1) //playlist creation
             {
@@ -326,6 +326,38 @@ namespace audio_test
                 
                 
             }
+            else if (mode == 5)
+            {
+                
+                List<string> playlistlist = listgen(playlistpath, temppath, ".txt");
+                if (playlistlist.Count <= 0)
+                {
+                    return;
+                }
+                int i = 0;
+                while (i < playlistlist.Count)
+                {
+                    List<string> currentplaylist = listgen(search(2, playlistpath, playlistlist[i], temppath), temppath, ".mp3");
+                    int j = 0;
+                    Console.Clear();
+                    while (j < currentplaylist.Count)
+                    {
+                        if(target == currentplaylist[j])
+                        {
+                            currentplaylist.Remove(target);
+                           
+                        }
+                        j++;
+                    }
+                    StreamWriter writer = new StreamWriter(search(2, playlistpath, playlistlist[i], temppath),false);
+                    for (int k = 0; k < currentplaylist.Count; k++)
+                    {
+                        writer.WriteLine(currentplaylist[k]);
+                    }
+                    writer.Close();
+                    i++;
+                }
+            }
         }
         public static void foldersearch(string path, string temppath) //Searches for new songs from a folder
         {
@@ -356,7 +388,7 @@ namespace audio_test
             string option = Console.ReadLine();
             if (option == "y")
             {
-                playlist(path, temppath, 3, temolocation);
+                playlist(path, temppath, 3, temolocation,"");
             }
             mainmenu(path, temppath);
         }
@@ -399,15 +431,15 @@ namespace audio_test
                     int modechoice = int.Parse(Console.ReadLine());
                     if (modechoice == 1)
                     {
-                        playlist(path, temppath, 1,new List<string>());
+                        playlist(path, temppath, 1,new List<string>(),"");
                     }
                     else if (modechoice == 2)
                     {
-                        playlist(path, temppath, 2,new List<string>());
+                        playlist(path, temppath, 2,new List<string>(),"");
                     }
                     else if (modechoice == 3)
                     {
-                        playlist(path,temppath,4,new List<string>());
+                        playlist(path,temppath,4,new List<string>(),"");
                     }
                 }
 
@@ -566,7 +598,7 @@ namespace audio_test
                 while (playing)
                 {
                     Console.WriteLine($"{name}");
-                    Console.WriteLine("Player controls: pause, play, stop");
+                    Console.WriteLine("Player controls: pause, play, stop\nmay need to press enter multiple times for this to function");
                     string command = Console.ReadLine();
                     if (command == "pause")
                     {
@@ -696,11 +728,13 @@ namespace audio_test
                     {
                         if ((String.Compare(line, line_to_delete) == 0) || (String.Compare(line, line_to_delete2) == 0))
                         {
+                            playlist(path, temppath, 5, new List<string>(), line);
                             continue;
                         }
 
 
                         writer.WriteLine(line);
+                        
                     }
                 }
             }
