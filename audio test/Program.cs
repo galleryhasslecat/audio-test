@@ -707,38 +707,7 @@ namespace audio_test
         }
         public static void remove(string path, string temppath)//Remove songs needs improvement
         {
-            Console.Clear();
-            StreamReader tempreader = new StreamReader(path, Encoding.UTF8);
-            StreamWriter tempwriter = new StreamWriter(temppath, false, Encoding.UTF8);
-            string tempbuffer = tempreader.ReadToEnd();
-            tempwriter.Write(tempbuffer);
-            tempreader.Close();
-            tempwriter.Close();
-            string line = null;
-            search(1, path, "", temppath);
-            Console.WriteLine("Which to remove");
-            string line_to_delete = Console.ReadLine();
-            string line_to_delete2 = search(2, path, line_to_delete, temppath);
-
-            using (StreamReader reader = new StreamReader(temppath, Encoding.UTF8))
-            {
-                using (StreamWriter writer = new StreamWriter(path, false, Encoding.UTF8))
-                {
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        if ((String.Compare(line, line_to_delete) == 0) || (String.Compare(line, line_to_delete2) == 0))
-                        {
-                            playlist(path, temppath, 5, new List<string>(), line);
-                            continue;
-                        }
-
-
-                        writer.WriteLine(line);
-                        
-                    }
-                }
-            }
-            mainmenu(path, temppath);
+            
         }
         static void Main(string[] args)//initialisation
         {
