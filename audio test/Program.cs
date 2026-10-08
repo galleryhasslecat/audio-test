@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
@@ -24,14 +23,14 @@ namespace audio_test
                 Console.WriteLine($"({i}) {list[i]}");
                 i++;
             }
-            return i-1;
+            return i - 1;
         }
-        public static List<string> listgen(string path, string temppath,string remove)//generates a list from a file
+        public static List<string> listgen(string path, string temppath, string remove)//generates a list from a file
         {
             StreamReader reader = new StreamReader(path);
             List<string> list = new List<string>();
             string buffer = "";
-            while((buffer = reader.ReadLine()) != null)
+            while ((buffer = reader.ReadLine()) != null)
             {
                 if (!buffer.EndsWith(remove))
                 {
@@ -41,7 +40,7 @@ namespace audio_test
             reader.Close();
             return list;
         }
-        public static void playlist(string path, string temppath, int mode) //mode 2 ammend //mode 3 mass add //mode 4 play //mode 5 remove song from all playlists 
+        public static void playlist(string path, string temppath, int mode,List<string> createlist) //mode 2 ammend //mode 3 mass add //mode 4 play //mode 5 remove song from all playlists 
         {
             if (mode == 1) //playlist creation
             {
@@ -80,7 +79,7 @@ namespace audio_test
                     string choice = "";
                     Console.WriteLine($"Please select an number to add to the playlist 0 - {i - 1} or STOP to stop");
                     choice = Console.ReadLine();
-                    if ((int.TryParse(choice, out int intchoice)) && (intchoice >= 0) && (intchoice <= i-1))
+                    if ((int.TryParse(choice, out int intchoice)) && (intchoice >= 0) && (intchoice <= i - 1))
                     {
                         templist.Add(list[intchoice]);
                         list.Remove(list[intchoice]);
@@ -146,27 +145,27 @@ namespace audio_test
 
                 }
                 loop = true;
-                List<string> playlistsonglist = listgen(pathtoplaylist, temppath,".mp3");
+                List<string> playlistsonglist = listgen(pathtoplaylist, temppath, ".mp3");
                 Console.WriteLine("Would you like to remove (1) or add songs (2) to this playlist?");
                 int choice2 = int.Parse(Console.ReadLine());
-                if( choice2 == 2)
+                if (choice2 == 2)
                 {
-                    
+
                     Console.Clear();
                     List<string> mainlist = listgen(path, temppath, ".mp3");
                     Console.Clear();
                     Console.WriteLine("Loading may take time.");
-                    for (i = listoutput(playlistsonglist); i > 0; i--)
+                    for (i = listoutput(playlistsonglist); i >= 0; i--)
                     {
                         int j = 0;
-                        while(j < mainlist.Count)
+                        while (j < mainlist.Count)
                         {
-                            
+
                             if (mainlist[j] == playlistsonglist[i])
                             {
                                 mainlist.RemoveAt(j);
-                                
-                                
+
+
                             }
                             j++;
 
@@ -181,7 +180,7 @@ namespace audio_test
                         Console.WriteLine($"Please choose a song to add 0 - {i} or stop to stop");
                         choice = Console.ReadLine();
 
-                        
+
                         if ((int.TryParse(choice, out int intchoice) && (intchoice >= 0) && (intchoice <= i)))
                         {
                             playlistsonglist.Add(mainlist[intchoice]);
@@ -195,8 +194,8 @@ namespace audio_test
                         }
 
                     }
-                    
-                } 
+
+                }
                 if (choice2 == 1)
                 {
                     while (loop)
@@ -213,7 +212,7 @@ namespace audio_test
                             Console.Clear();
 
                         }
-                        else if(choice == "STOP")
+                        else if (choice == "STOP")
                         {
                             loop = false;
                             Console.Clear();
@@ -232,17 +231,37 @@ namespace audio_test
                 {
                     Console.WriteLine("Bad option");
                 }
-                
+
                 StreamWriter finalwrite = new StreamWriter(pathtoplaylist, false);
-                for(i = 0; i < playlistsonglist.Count ; i++)
+                for (i = 0; i < playlistsonglist.Count; i++)
                 {
                     finalwrite.WriteLine(playlistsonglist[i]);
                     finalwrite.WriteLine(search(2, path, playlistsonglist[i], temppath));
                 }
                 finalwrite.Close();
                 mainmenu(path, temppath);
+
+
+            }
+            else if (mode == 3)
+            {
+                int i = 0;
+                Console.WriteLine("Playlist name:");
+                string playname = Console.ReadLine();
+                string playpath = ($@"{Directory.GetCurrentDirectory()}\{playname}.txt");
+                File.WriteAllText(playpath, "");
                 
-                
+                StreamWriter writer2 = new StreamWriter(playlistpath, true);
+                writer2.WriteLine(playname);
+                writer2.WriteLine(playpath);
+                writer2.Close();
+                StreamWriter writer = new StreamWriter(playpath, false);
+                while (i < createlist.Count)
+                {
+                    writer.WriteLine(createlist[i]);
+                    i++;
+                }
+                writer.Close();
             }
         }
         public static void foldersearch(string path, string temppath) //Searches for new songs from a folder
@@ -252,6 +271,7 @@ namespace audio_test
             Console.WriteLine("Where is the folder to search");
             string folderpath = Console.ReadLine();
             string[] files = Directory.GetFiles(folderpath, "*.mp3"); //ensure files found end in .mp3
+            List<string> temolocation = new List<string>();
             foreach (var file in files) //scan each file
             {
 
@@ -262,13 +282,19 @@ namespace audio_test
                 location = location + @"\" + name; //ensure formatting is correct for the location
                 name = name.Substring(0, namelenth - 4); //ensure formatting is correct for the name
                 Console.WriteLine(name);
-
+                temolocation.Add(name);
                 writer.WriteLine(name);
 
                 writer.WriteLine(location);
             }
             writer.Close();
             Thread.Sleep(1000);
+            Console.WriteLine("Would you like to create a playlist from this folder (y/n)");
+            string option = Console.ReadLine();
+            if (option == "y")
+            {
+                playlist(path, temppath, 3, temolocation);
+            }
             mainmenu(path, temppath);
         }
         public static void mainmenu(string path, string temppath)//Main menu function
@@ -310,14 +336,14 @@ namespace audio_test
                     int modechoice = int.Parse(Console.ReadLine());
                     if (modechoice == 1)
                     {
-                        playlist(path, temppath, 1);
+                        playlist(path, temppath, 1,new List<string>());
                     }
                     else if (modechoice == 2)
                     {
-                        playlist(path, temppath, 2);
+                        playlist(path, temppath, 2,new List<string>());
                     }
                 }
-                
+
                 else
                 {
                     mainmenu(path, temppath);
