@@ -377,6 +377,11 @@ namespace audio_test
                     choice = Console.ReadLine();
                     if ((int.TryParse(choice, out int intchoice)) && (intchoice >= 0) && (intchoice <= i))
                     {
+                        FileInfo fileinfo = new FileInfo(listplaylist[(intchoice * 2) + 1]);
+                        if (fileinfo.Exists)
+                        {
+                            fileinfo.Delete();
+                        }
                         listplaylist.Remove(listplaylist[(intchoice*2) +1]);
                         listplaylist.Remove(listplaylist[(intchoice*2)]);
                         listplaylistvisual.Remove(listplaylistvisual[intchoice]);
