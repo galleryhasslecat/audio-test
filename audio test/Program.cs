@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Xml.Serialization;
 
 namespace audio_test
 {
@@ -11,6 +12,7 @@ namespace audio_test
     internal class Program
     {
         public static string playlistpath = $@"{Directory.GetCurrentDirectory()}\playlist.txt";
+        public static int potentialenters = 0;
 
         //playlist function next major feature!
         //Current Code needs improvement first though!!!!
@@ -41,7 +43,7 @@ namespace audio_test
             reader.Close();
             return list;
         }
-        public static void playlist(string path, string temppath, int mode,List<string> createlist,string target) //mode 2 ammend //mode 3 mass add //mode 4 play //mode 5 remove song from all playlists 
+        public static void playlist(string path, string temppath, int mode,List<string> createlist,string target) //mode 2 ammend //mode 3 mass add //mode 4 play //mode 5 remove song from all playlists//mode 6 remove playlist 
         {
             if (mode == 1) //playlist creation
             {
@@ -297,7 +299,9 @@ namespace audio_test
                 List<string> playinglist = listgen(chosenplaylistpath, temppath, ".mp3");
                 while ((p < playinglist.Count) && (p != -6451))
                 {
+
                     int checkstop = play(search(2, path, playinglist[p], temppath), temppath, playinglist[p]);
+                    
                     if (checkstop != 0)
                     {
                         Console.Clear();
@@ -318,6 +322,7 @@ namespace audio_test
                     }
                     else
                     {
+                        
                         p++;
                     }
                     
@@ -358,6 +363,45 @@ namespace audio_test
                     writer.Close();
                     i++;
                 }
+            }
+            else if (mode == 6)
+            {
+                List<string> listplaylist = listgen(playlistpath, temppath, ".FARRRRRRRRRRRRRRRT");
+                List<string> listplaylistvisual = listgen(playlistpath, temppath, ".txt");
+                bool loop = true;
+                while (loop)
+                {
+                    int i = listoutput(listplaylistvisual);
+                    string choice = "";
+                    Console.WriteLine($"Select a playlist to delete 0 - {i} or STOP to stop");
+                    choice = Console.ReadLine();
+                    if ((int.TryParse(choice, out int intchoice)) && (intchoice >= 0) && (intchoice <= i))
+                    {
+                        listplaylist.Remove(listplaylist[(intchoice*2) +1]);
+                        listplaylist.Remove(listplaylist[(intchoice*2)]);
+                        listplaylistvisual.Remove(listplaylistvisual[intchoice]);
+                    }
+                    else if (choice == "STOP")
+                    {
+                        loop = false;
+                        continue;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                StreamWriter writer = new StreamWriter(playlistpath, false);
+                int j = 0;
+                while (j < listplaylist.Count)
+                {
+                    writer.WriteLine(listplaylist[j]);
+                    j++;
+                    
+                }
+                writer.Close();
+                mainmenu(path,temppath);
+                
             }
         }
         public static void foldersearch(string path, string temppath) //Searches for new songs from a folder
@@ -428,7 +472,7 @@ namespace audio_test
                 }
                 else if (choice == 5)
                 {
-                    Console.WriteLine("\n(1) Create playlist\n(2) Ammend current playlist\n(3) Play playlist");
+                    Console.WriteLine("\n(1) Create playlist\n(2) Ammend current playlist\n(3) Play playlist\n(4) Remove song from playlist");
                     int modechoice = int.Parse(Console.ReadLine());
                     if (modechoice == 1)
                     {
@@ -441,6 +485,10 @@ namespace audio_test
                     else if (modechoice == 3)
                     {
                         playlist(path,temppath,4,new List<string>(),"");
+                    }
+                    else if(modechoice == 4)
+                    {
+                        playlist(path, temppath, 6, new List<string>(), "");
                     }
                 }
 
@@ -599,7 +647,7 @@ namespace audio_test
                 while (playing)
                 {
                     Console.WriteLine($"{name}");
-                    Console.WriteLine("Player controls: pause, play, stop\nmay need to press enter multiple times for this to function");
+                    Console.WriteLine("Player controls: pause, play, stop");
                     string command = Console.ReadLine();
                     if (command == "pause")
                     {
@@ -614,6 +662,20 @@ namespace audio_test
                         player.controls.stop();
                         playing = false;
                         return;
+                    }
+                    else
+                    {
+                        //add not writing response if playing
+                        Console.WriteLine($"Empty response you may need to press enter {potentialenters-1} more time(s).");
+                        if(playing == true)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            potentialenters--;
+                        }
+                        
                     }
                 }
 
@@ -630,6 +692,7 @@ namespace audio_test
                 if (remaining <= 1)
                 {
                     playing = false;
+                    potentialenters++;
                     return 0;
 
                 }
@@ -708,19 +771,22 @@ namespace audio_test
         }
         public static void remove(string path, string temppath)//Remove songs needs improvement
         {
-            List<string> list = listgen(path, temppath, ".mp3");
+            List<string> list = listgen(path, temppath, ".habadahabada");
+            List<string> list2 = listgen(path, temppath, ".mp3");
             bool loop = true;
             while (loop)
             {
                 Console.Clear();
-                int i = listoutput(list);
+                int i = listoutput(list2);
                 string choice = "";
                 Console.WriteLine($"Select a song to remove 0 - {i} or STOP to stop");
                 choice = Console.ReadLine();
                 if ((int.TryParse(choice, out int intchoice)) && (intchoice >= 0) && (intchoice <= i))
                 {
-                    playlist(path, temppath, 5, new List<string>(), list[intchoice]);
-                    list.Remove(list[intchoice]);
+                    playlist(path, temppath, 5, new List<string>(), list2[intchoice]);
+                    list.Remove(list[(intchoice*2)+1]);
+                    list2.Remove(list2[intchoice]);
+                    list.Remove(list[intchoice*2]);
                     
                 }
                 else if(choice == "STOP")
