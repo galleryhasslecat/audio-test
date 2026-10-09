@@ -412,27 +412,37 @@ namespace audio_test
         public static void foldersearch(string path, string temppath) //Searches for new songs from a folder
         {
             Console.Clear();
-            StreamWriter writer = new StreamWriter(path, true, Encoding.UTF8);
+            
             Console.WriteLine("Where is the folder to search");
             string folderpath = Console.ReadLine();
             string[] files = Directory.GetFiles(folderpath, "*.mp3"); //ensure files found end in .mp3
             List<string> temolocation = new List<string>();
             foreach (var file in files) //scan each file
             {
+                
 
                 string location = Path.GetDirectoryName(file);
                 string name = Path.GetFileName(file);
                 int namelenth = name.Length;
-
+                
                 location = location + @"\" + name; //ensure formatting is correct for the location
                 name = name.Substring(0, namelenth - 4); //ensure formatting is correct for the name
+                
+                if ((search(3,path,name,temppath) == "1") || (search(3,path,location,temppath) == "1"))
+                {
+                    Console.WriteLine("Already in list!");
+                    
+                    continue;
+                }
+                StreamWriter writer = new StreamWriter(path, true, Encoding.UTF8);
                 Console.WriteLine(name);
                 temolocation.Add(name);
                 writer.WriteLine(name);
 
                 writer.WriteLine(location);
+                writer.Close();
             }
-            writer.Close();
+            
             Thread.Sleep(1000);
             Console.WriteLine("Would you like to create a playlist from this folder (y/n)");
             string option = Console.ReadLine();
@@ -523,14 +533,13 @@ namespace audio_test
 
                 Console.WriteLine("Path to song");
                 pathtosong = Console.ReadLine();
-                if ((pathtosong.EndsWith(".mp3")) && (songname != ""))
+                if ((pathtosong.EndsWith(".mp3")) && (songname != "") && (!songname.EndsWith(".mp3")) && (search(3,path,songname,temppath) != "1") && (search(3,path,pathtosong,temppath) != "1"))
                 {
 
                 }
                 else //quit to main menu if insupported file or invalid location
                 {
-                    Console.WriteLine("Invalid choices quitting to main menu!");
-                    addsong = false;
+                    Console.WriteLine("Invalid choices!");                  
                     continue;
                 }
                 writer.WriteLine(songname);
