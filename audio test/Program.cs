@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Microsoft.SqlServer.Server;
+using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Xml.Serialization;
 
 namespace audio_test
 {
@@ -11,44 +12,444 @@ namespace audio_test
     internal class Program
     {
         public static string playlistpath = $@"{Directory.GetCurrentDirectory()}\playlist.txt";
+        public static int potentialenters = 0;
 
         //playlist function next major feature!
         //Current Code needs improvement first though!!!!
         //Clear Console more often
-        public static void playlist(string path, string temppath,int mode)
+        //search to check if something exists when adding new songs
+        public static int listoutput(List<string> list)//outputs a list with a numbered format returning the number of items in a list
         {
-            if (mode == 1)
+            int i = 0;
+            while (i < list.Count)
             {
+                Console.WriteLine($"({i}) {list[i]}");
+                i++;
+            }
+            return i - 1;
+        }
+        public static List<string> listgen(string path, string temppath, string remove)//generates a list from a file
+        {
+            StreamReader reader = new StreamReader(path);
+            List<string> list = new List<string>();
+            string buffer = "";
+            while ((buffer = reader.ReadLine()) != null)
+            {
+                if (!buffer.EndsWith(remove))
+                {
+                    list.Add(buffer);
+                }
+            }
+            reader.Close();
+            return list;
+        }
+        public static void playlist(string path, string temppath, int mode,List<string> createlist,string target) //mode 2 ammend //mode 3 mass add //mode 4 play //mode 5 remove song from all playlists//mode 6 remove playlist 
+        {
+            if (mode == 1) //playlist creation
+            {
+                Console.Clear();
                 Console.WriteLine("What is your playlist name?");
                 string playname = Console.ReadLine();
                 string indivplaypath = $@"{Directory.GetCurrentDirectory()}\{playname}.txt";
                 StreamWriter writer = new StreamWriter(playlistpath, true);
+                writer.WriteLine(playname);
+                writer.WriteLine(indivplaypath);
+                writer.Close();
+                File.WriteAllText(indivplaypath, "");
+                List<string> list = new List<string>();
+                List<string> templist = new List<string>();
+                StreamReader reader = new StreamReader(path);
+                string buffer = "";
+                bool loopbool = false;
+                while ((buffer = reader.ReadLine()) != null)
+                {
+                    if (!buffer.EndsWith(".mp3"))
+                    {
+                        list.Add(buffer);
+                    }
+                }
+
+                while (loopbool == false)
+                {
+                    int i = 0;
+
+                    while (i < list.Count)
+                    {
+
+                        Console.WriteLine($"({i}) {list[i]}");
+                        i++;
+                    }
+                    string choice = "";
+                    Console.WriteLine($"Please select an number to add to the playlist 0 - {i - 1} or STOP to stop");
+                    choice = Console.ReadLine();
+                    if ((int.TryParse(choice, out int intchoice)) && (intchoice >= 0) && (intchoice <= i - 1))
+                    {
+                        templist.Add(list[intchoice]);
+                        list.Remove(list[intchoice]);
+                    }
+                    else if (choice == "STOP") //could remove templist and write straight into file
+                    {
+                        StreamWriter writer2 = new StreamWriter(indivplaypath);
+                        i = 0;
+                        while (i < templist.Count)
+                        {
+                            writer2.WriteLine(templist[i]);
+
+                            i++;
+                        }
+                        writer2.Close();
+                        reader.Close();
+                        mainmenu(path, temppath);
+                    }
+                }
+
+            }
+            else if (mode == 2)
+            {
+                StreamReader playnameread = new StreamReader(playlistpath);
+                List<string> playnamelist = new List<string>();
+                string buffer = "";
+                int i = 0;
+                bool loop = true;
+                while (((buffer = playnameread.ReadLine()) != null))
+                {
+                    if ((!buffer.EndsWith(".txt")))
+                    {
+                        playnamelist.Add(buffer);
+
+
+                    }
+
+                }
+                playnameread.Close();
+                string pathtoplaylist = "";
+                while (loop)
+                {
+                    Console.Clear();
+                    i = 0;
+                    while (i < playnamelist.Count)
+                    {
+                        Console.WriteLine($"({i}) {playnamelist[i]}");
+                        i++;
+                    }
+                    string choice = "";
+                    Console.WriteLine($"Please select a playlist to ammend 0 - {i - 1}");
+                    choice = Console.ReadLine();
+                    if ((int.TryParse(choice, out int intchoice) && (intchoice >= 0) && (intchoice <= i - 1)))
+                    {
+                        pathtoplaylist = search(2, playlistpath, playnamelist[intchoice], temppath);
+                        loop = false;
+                        continue;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                }
+                loop = true;
+                List<string> playlistsonglist = listgen(pathtoplaylist, temppath, ".mp3");
+                Console.WriteLine("Would you like to remove (1) or add songs (2) to this playlist?");
+                int choice2 = int.Parse(Console.ReadLine());
+                if (choice2 == 2)
+                {
+
+                    Console.Clear();
+                    List<string> mainlist = listgen(path, temppath, ".mp3");
+                    Console.Clear();
+                    Console.WriteLine("Loading may take time.");
+                    for (i = listoutput(playlistsonglist); i >= 0; i--)
+                    {
+                        int j = 0;
+                        while (j < mainlist.Count)
+                        {
+
+                            if (mainlist[j] == playlistsonglist[i])
+                            {
+                                mainlist.RemoveAt(j);
+
+
+                            }
+                            j++;
+
+                        }
+                    }
+                    Console.Clear();
+                    bool addsong = true;
+                    while (addsong)
+                    {
+                        i = listoutput(mainlist);
+                        string choice = "";
+                        Console.WriteLine($"Please choose a song to add 0 - {i} or stop to stop");
+                        choice = Console.ReadLine();
+
+
+                        if ((int.TryParse(choice, out int intchoice) && (intchoice >= 0) && (intchoice <= i)))
+                        {
+                            playlistsonglist.Add(mainlist[intchoice]);
+                            mainlist.RemoveAt(intchoice);
+
+                        }
+                        else if (choice == "stop")
+                        {
+                            addsong = false;
+                            continue;
+                        }
+
+                    }
+
+                }
+                if (choice2 == 1)
+                {
+                    while (loop)
+                    {
+                        i = listoutput(playlistsonglist);
+                        string choice = "";
+                        Console.WriteLine($"Please select a song to remove 0 - {i} or choose STOP to stop");
+                        choice = Console.ReadLine();
+
+                        if ((int.TryParse(choice, out int intchoice)) && (intchoice <= i) && (intchoice >= 0))
+                        {
+
+                            playlistsonglist.Remove(playlistsonglist[intchoice]);
+                            Console.Clear();
+
+                        }
+                        else if (choice == "STOP")
+                        {
+                            loop = false;
+                            Console.Clear();
+                            continue;
+                        }
+                        else
+                        {
+                            Console.Clear();
+                            Console.WriteLine("Invalid choice");
+                            continue;
+                        }
+
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Bad option");
+                }
+
+                StreamWriter finalwrite = new StreamWriter(pathtoplaylist, false);
+                for (i = 0; i < playlistsonglist.Count; i++)
+                {
+                    finalwrite.WriteLine(playlistsonglist[i]);
+                    
+                }
+                finalwrite.Close();
+                mainmenu(path, temppath);
+
+
+            }
+            else if (mode == 3)
+            {
+                int i = 0;
+                Console.WriteLine("Playlist name:");
+                string playname = Console.ReadLine();
+                string playpath = ($@"{Directory.GetCurrentDirectory()}\{playname}.txt");
+                File.WriteAllText(playpath, "");
+                
+                StreamWriter writer2 = new StreamWriter(playlistpath, true);
+                writer2.WriteLine(playname);
+                writer2.WriteLine(playpath);
+                writer2.Close();
+                StreamWriter writer = new StreamWriter(playpath, false);
+                while (i < createlist.Count)
+                {
+                    writer.WriteLine(createlist[i]);
+                    i++;
+                }
+                writer.Close();
+            }
+            else if (mode == 4)
+            {
+                Console.Clear();
+                string chosenplaylistpath = "";
+                List<string> playlistlist = listgen(playlistpath, temppath, ".txt");
+                bool loop = true;
+                while (loop)
+                {
+                    int i = listoutput(playlistlist);
+                    string choice = "";
+                    Console.WriteLine($"Which playlist would you like 0 - {i} or STOP to stop");
+                    choice = Console.ReadLine();
+                    if ((int.TryParse(choice, out int intchoice) ) && (intchoice >= 0) && (intchoice <= i))
+                    {
+                        
+                        chosenplaylistpath = search(2,playlistpath,playlistlist[intchoice],temppath);
+                        loop = false;
+                        continue;
+                    }
+                    else if(choice == "STOP")
+                    {
+                        loop = false;
+                        mainmenu(path, temppath);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                int p = 0;
+                List<string> playinglist = listgen(chosenplaylistpath, temppath, ".mp3");
+                while ((p < playinglist.Count) && (p != -6451))
+                {
+
+                    int checkstop = play(search(2, path, playinglist[p], temppath), temppath, playinglist[p]);
+                    
+                    if (checkstop != 0)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Stopped would you like to skip the song or stop the playlist\n(s) for skip\nanything else for stop" +
+                            "\nmay need to press enter multiple times");
+                        if (Console.ReadLine() == "s")
+                        {
+                            p++;
+                            continue;
+                        }
+                        else
+                        {
+
+                            p = -6451;
+                            continue;
+                        }
+                        
+                    }
+                    else
+                    {
+                        
+                        p++;
+                    }
+                    
+                }
+                mainmenu(path, temppath);
+                
+                
+                
+            }
+            else if (mode == 5)
+            {
+                
+                List<string> playlistlist = listgen(playlistpath, temppath, ".txt");
+                if (playlistlist.Count <= 0)
+                {
+                    return;
+                }
+                int i = 0;
+                while (i < playlistlist.Count)
+                {
+                    List<string> currentplaylist = listgen(search(2, playlistpath, playlistlist[i], temppath), temppath, ".mp3");
+                    int j = 0;
+                    Console.Clear();
+                    while (j < currentplaylist.Count)
+                    {
+                        if(target == currentplaylist[j])
+                        {
+                            currentplaylist.Remove(target);
+                           
+                        }
+                        j++;
+                    }
+                    StreamWriter writer = new StreamWriter(search(2, playlistpath, playlistlist[i], temppath),false);
+                    for (int k = 0; k < currentplaylist.Count; k++)
+                    {
+                        writer.WriteLine(currentplaylist[k]);
+                    }
+                    writer.Close();
+                    i++;
+                }
+            }
+            else if (mode == 6)
+            {
+                List<string> listplaylist = listgen(playlistpath, temppath, ".FARRRRRRRRRRRRRRRT");
+                List<string> listplaylistvisual = listgen(playlistpath, temppath, ".txt");
+                bool loop = true;
+                while (loop)
+                {
+                    int i = listoutput(listplaylistvisual);
+                    string choice = "";
+                    Console.WriteLine($"Select a playlist to delete 0 - {i} or STOP to stop");
+                    choice = Console.ReadLine();
+                    if ((int.TryParse(choice, out int intchoice)) && (intchoice >= 0) && (intchoice <= i))
+                    {
+                        FileInfo fileinfo = new FileInfo(listplaylist[(intchoice * 2) + 1]);
+                        if (fileinfo.Exists)
+                        {
+                            fileinfo.Delete();
+                        }
+                        listplaylist.Remove(listplaylist[(intchoice*2) +1]);
+                        listplaylist.Remove(listplaylist[(intchoice*2)]);
+                        listplaylistvisual.Remove(listplaylistvisual[intchoice]);
+                    }
+                    else if (choice == "STOP")
+                    {
+                        loop = false;
+                        continue;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                StreamWriter writer = new StreamWriter(playlistpath, false);
+                int j = 0;
+                while (j < listplaylist.Count)
+                {
+                    writer.WriteLine(listplaylist[j]);
+                    j++;
+                    
+                }
+                writer.Close();
+                mainmenu(path,temppath);
+                
             }
         }
         public static void foldersearch(string path, string temppath) //Searches for new songs from a folder
         {
             Console.Clear();
-            StreamWriter writer = new StreamWriter(path, true, Encoding.UTF8);
+            
             Console.WriteLine("Where is the folder to search");
             string folderpath = Console.ReadLine();
             string[] files = Directory.GetFiles(folderpath, "*.mp3"); //ensure files found end in .mp3
+            List<string> temolocation = new List<string>();
             foreach (var file in files) //scan each file
             {
+                
 
                 string location = Path.GetDirectoryName(file);
                 string name = Path.GetFileName(file);
                 int namelenth = name.Length;
-
+                
                 location = location + @"\" + name; //ensure formatting is correct for the location
                 name = name.Substring(0, namelenth - 4); //ensure formatting is correct for the name
+                
+                if ((search(3,path,name,temppath) == "1") || (search(3,path,location,temppath) == "1"))
+                {
+                    Console.WriteLine("Already in list!");
+                    
+                    continue;
+                }
+                StreamWriter writer = new StreamWriter(path, true, Encoding.UTF8);
                 Console.WriteLine(name);
-
+                temolocation.Add(name);
                 writer.WriteLine(name);
 
                 writer.WriteLine(location);
+                writer.Close();
             }
-            writer.Close();
+            
             Thread.Sleep(1000);
+            Console.WriteLine("Would you like to create a playlist from this folder (y/n)");
+            string option = Console.ReadLine();
+            if (option == "y")
+            {
+                playlist(path, temppath, 3, temolocation,"");
+            }
             mainmenu(path, temppath);
         }
         public static void mainmenu(string path, string temppath)//Main menu function
@@ -58,7 +459,8 @@ namespace audio_test
             Console.WriteLine("Play library (2)");
             Console.WriteLine("Remove songs (3)");
             Console.WriteLine("Add folder (4)");
-            Console.WriteLine("Exit (5)");
+            Console.WriteLine("Playlist (5)");
+            Console.WriteLine("Exit (6)");
             string strchoice = Console.ReadLine();
 
             if (int.TryParse(strchoice, out int choice)) //Main option selection
@@ -71,7 +473,7 @@ namespace audio_test
                 {
                     playsongs(path, temppath);
                 }
-                else if (choice == 5)
+                else if (choice == 6)
                 {
                     Environment.Exit(0);
                 }
@@ -83,6 +485,28 @@ namespace audio_test
                 {
                     foldersearch(path, temppath);
                 }
+                else if (choice == 5)
+                {
+                    Console.WriteLine("\n(1) Create playlist\n(2) Ammend current playlist\n(3) Play playlist\n(4) Remove song from playlist");
+                    int modechoice = int.Parse(Console.ReadLine());
+                    if (modechoice == 1)
+                    {
+                        playlist(path, temppath, 1,new List<string>(),"");
+                    }
+                    else if (modechoice == 2)
+                    {
+                        playlist(path, temppath, 2,new List<string>(),"");
+                    }
+                    else if (modechoice == 3)
+                    {
+                        playlist(path,temppath,4,new List<string>(),"");
+                    }
+                    else if(modechoice == 4)
+                    {
+                        playlist(path, temppath, 6, new List<string>(), "");
+                    }
+                }
+
                 else
                 {
                     mainmenu(path, temppath);
@@ -109,14 +533,13 @@ namespace audio_test
 
                 Console.WriteLine("Path to song");
                 pathtosong = Console.ReadLine();
-                if ((pathtosong.EndsWith(".mp3")) && (songname != ""))
+                if ((pathtosong.EndsWith(".mp3")) && (songname != "") && (!songname.EndsWith(".mp3")) && (search(3,path,songname,temppath) != "1") && (search(3,path,pathtosong,temppath) != "1"))
                 {
 
                 }
                 else //quit to main menu if insupported file or invalid location
                 {
-                    Console.WriteLine("Invalid choices quitting to main menu!");
-                    addsong = false;
+                    Console.WriteLine("Invalid choices!");                  
                     continue;
                 }
                 writer.WriteLine(songname);
@@ -186,7 +609,7 @@ namespace audio_test
                     {
 
                         string location = search(2, path, hundredlist[intchoice], temppath); //search for path of selected song
-                        
+
                         play(location, temppath, hundredlist[intchoice]); //play song
                         i = 0;
                         hundredlist.Clear();
@@ -219,22 +642,22 @@ namespace audio_test
             }
 
         }
-        public static void play(string path, string temppath,string name)//Processing playback of songs
+        public static int play(string path, string temppath, string name)//Processing playback of songs
         {
             var player = new WMPLib.WindowsMediaPlayer();
             player.URL = path;
             player.controls.play();
 
             Console.Clear();
-            System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(1000);
             double totalDuration = player.currentMedia.duration;
-            
+
             bool playing = true;
-            
+
             // selection thread
             Thread progressThread = new Thread(() =>
             {
-                
+
                 while (playing)
                 {
                     Console.WriteLine($"{name}");
@@ -252,11 +675,26 @@ namespace audio_test
                         Console.Clear();
                         player.controls.stop();
                         playing = false;
+                        return;
+                    }
+                    else
+                    {
+                        //add not writing response if playing
+                        Console.WriteLine($"Empty response you may need to press enter {potentialenters-1} more time(s).");
+                        if(playing == true)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            potentialenters--;
+                        }
+                        
                     }
                 }
-               
+
             });
-            
+
             progressThread.IsBackground = true;  // thread dies with main program
             progressThread.Start();
 
@@ -264,10 +702,12 @@ namespace audio_test
             double remaining = 999;
             while (playing)
             {
+                Thread.Sleep(50);
                 if (remaining <= 1)
                 {
                     playing = false;
-                    return;
+                    potentialenters++;
+                    return 0;
 
                 }
                 double currentPos = player.controls.currentPosition;
@@ -279,6 +719,7 @@ namespace audio_test
                 Console.Write($"\rTime left: {mins:D2}:{secs:D2}  ");
                 System.Threading.Thread.Sleep(200);
             }
+            return 5;
 
         }
         public static string search(int mode, string path, string target, string temppath)//Search function with 2 specific modes
@@ -317,6 +758,25 @@ namespace audio_test
                     }
                     reader2.Close();
                     break;
+                case 3://check if something already exists in a given context
+                    StreamReader reader3 = new StreamReader(path); //path is context target is item to check
+                    string buffer3 = "";
+                    while ((buffer3 = reader3.ReadLine()) != null)
+                    {
+                        if (buffer3 == target)
+                        {
+                            reader3.Close();
+                            return "1";
+                        }
+                        else
+                        {
+
+                            continue;
+                        }
+                    }
+                    reader3.Close();
+                    return "2";
+
 
 
 
@@ -325,36 +785,45 @@ namespace audio_test
         }
         public static void remove(string path, string temppath)//Remove songs needs improvement
         {
-            Console.Clear();
-            StreamReader tempreader = new StreamReader(path, Encoding.UTF8);
-            StreamWriter tempwriter = new StreamWriter(temppath, false, Encoding.UTF8);
-            string tempbuffer = tempreader.ReadToEnd();
-            tempwriter.Write(tempbuffer);
-            tempreader.Close();
-            tempwriter.Close();
-            string line = null;
-            search(1, path, "", temppath);
-            Console.WriteLine("Which to remove");
-            string line_to_delete = Console.ReadLine();
-            string line_to_delete2 = search(2, path, line_to_delete, temppath);
-
-            using (StreamReader reader = new StreamReader(temppath, Encoding.UTF8))
+            List<string> list = listgen(path, temppath, ".habadahabada");
+            List<string> list2 = listgen(path, temppath, ".mp3");
+            bool loop = true;
+            while (loop)
             {
-                using (StreamWriter writer = new StreamWriter(path, false, Encoding.UTF8))
+                Console.Clear();
+                int i = listoutput(list2);
+                string choice = "";
+                Console.WriteLine($"Select a song to remove 0 - {i} or STOP to stop");
+                choice = Console.ReadLine();
+                if ((int.TryParse(choice, out int intchoice)) && (intchoice >= 0) && (intchoice <= i))
                 {
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        if ((String.Compare(line, line_to_delete) == 0) || (String.Compare(line, line_to_delete2) == 0))
-                        {
-                            continue;
-                        }
-
-
-                        writer.WriteLine(line);
-                    }
+                    playlist(path, temppath, 5, new List<string>(), list2[intchoice]);
+                    list.Remove(list[(intchoice*2)+1]);
+                    list2.Remove(list2[intchoice]);
+                    list.Remove(list[intchoice*2]);
+                    
+                }
+                else if(choice == "STOP")
+                {
+                    loop = false;
+                    continue;
+                }
+                else
+                {
+                    continue;
                 }
             }
+            StreamWriter writer = new StreamWriter(path,false);
+            int n = 0;
+            while(n < list.Count)
+            {
+                writer.WriteLine(list[n]);
+                n++;
+               
+            }
+            writer.Close();
             mainmenu(path, temppath);
+
         }
         static void Main(string[] args)//initialisation
         {
@@ -391,7 +860,7 @@ namespace audio_test
                 Console.WriteLine("File not found creating file");
                 File.WriteAllText(temppath, "");
             }
-            
+
             mainmenu(path, temppath);
         }
     }
