@@ -1,5 +1,6 @@
 ﻿using Microsoft.SqlServer.Server;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -297,6 +298,22 @@ namespace audio_test
                 }
                 int p = 0;
                 List<string> playinglist = listgen(chosenplaylistpath, temppath, ".mp3");
+                Console.WriteLine("Would you like to shuffle this playlist (y/n)");
+                string shuffle = "";
+                shuffle = Console.ReadLine();
+                if (shuffle == "y")
+                {
+                    Random rng = new Random();
+                    int n = playinglist.Count;
+                    while (n > 1)
+                    {
+                        n--;
+                        int k = rng.Next(n + 1);
+                        string value = playinglist[k];
+                        playinglist[k] = playinglist[n];
+                        playinglist[n] = value;
+                    }
+                }
                 while ((p < playinglist.Count) && (p != -6451))
                 {
 
