@@ -383,7 +383,7 @@ namespace audio_test
             }
             else if (mode == 6)
             {
-                List<string> listplaylist = listgen(playlistpath, temppath, ".FARRRRRRRRRRRRRRRT");
+                List<string> listplaylist = listgen(playlistpath, temppath, ".hellogoodbyehellogoodbyehellogoodbye");
                 List<string> listplaylistvisual = listgen(playlistpath, temppath, ".txt");
                 bool loop = true;
                 while (loop)
