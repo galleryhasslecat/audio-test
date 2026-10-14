@@ -694,16 +694,18 @@ namespace audio_test
                         playing = false;
                         return;
                     }
+
                     else
                     {
                         //add not writing response if playing
-                        Console.WriteLine($"Empty response you may need to press enter {potentialenters-1} more time(s).");
+                        
                         if(playing == true)
                         {
                             continue;
                         }
                         else
                         {
+                            Console.WriteLine($"Empty response you may need to press enter {potentialenters - 1} more time(s).");
                             potentialenters--;
                         }
                         
